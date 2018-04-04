@@ -25,8 +25,8 @@ double logistic(double a, double x)
 {
         int i = 100000;
         while (--i) {
-        x = a * x * (1 - x);
-    }
+                x = a * x * (1 - x);
+        }
     return x;
 }
 
