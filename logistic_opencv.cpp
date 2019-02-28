@@ -29,75 +29,84 @@
 #define FILENAME "output.png" /*output file name (.png,.jpg)*/
 #define ITERATION 10000 /*iteration count of logistic function*/
 
+struct calc_setting {
+        unsigned int width = WIDTH;
+        unsigned int height = HEIGHT;
+        uint8_t color_r = COLOR_R;
+        uint8_t color_g = COLOR_G;
+        uint8_t color_b = COLOR_B;
+        double ai = AI;
+        double af = AF;
+        unsigned int skip = SKIP;
+        unsigned int iteration = ITERATION;
+};
 
-double logistic(double a, double x)
+
+double time_spent(long long unsigned int *cv_start_count, double cv_time_freq)
 {
-        unsigned int i = ITERATION;
-
-        while (--i) {
-                x = a * x * (1 - x);
-        }
-        return x;
+        return (cvGetTickCount() - *cv_start_count) / (1000 * cv_time_freq);
 }
 
 
-double time_spent(long long unsigned int *cv_start_count, double *cv_time_freq)
-{
-        return (cvGetTickCount() - *cv_start_count) / (1000 * *cv_time_freq);
+double logistic(double *a, double x, unsigned int i)
+{       
+        while (--i) {
+                x = (*a) * x * (1 - x);
+        }
+        return x;
 }
 
 
 int main (int argc, char **argv)
 {
         IplImage *img = 0;
+        struct calc_setting setting;
+
+        const double cv_time_freq = cvGetTickFrequency() * 1000; /*timer frequency*/
+        const double aplus = (setting.af - setting.ai) * (1.0 / setting.width);  
+        const double x0plus = (1.0 / setting.height) * setting.skip;
+        
         unsigned int i = 0;  /*iteration counter*/
         unsigned int x, y;  /*image coordinates*/
-        unsigned int width = WIDTH;
-        unsigned int height = HEIGHT;
-
-        long long unsigned int time_start, time_lap_start; /*timer count*/
-        double cv_time_freq = cvGetTickFrequency() * 1000; /*timer frequency*/
-        double la, lx0;  /*function coordinates*/
-        double lap = (AF - AI) * (1.0 / width);  
-        double lxp = (1.0 / height) * SKIP;
-
+        double a, x0;  /*function coordinates*/
+        long long unsigned int time_start;
+        long long unsigned int time_lap_start;
 	double tmp_remain;
 	long unsigned int tmp_pixel;
 
         /*initialize an image*/
-        img = cvCreateImage(cvSize(width, height), IPL_DEPTH_8U, 3);
+        img = cvCreateImage(cvSize(setting.width, setting.height), IPL_DEPTH_8U, 3);
         if (img == 0) 
                 return -1;
 
         cvZero(img);
 
-        /*initialize timer*/
         time_start = cvGetTickCount();
 
-        for (la = AI; la < AF; la += lap) {
+        for (a = setting.ai; a < setting.af; a += aplus) {
                 time_lap_start = cvGetTickCount();
 
-                for (lx0 = 0; lx0 < 1; lx0 += lxp) {
-                        y = (unsigned int) height * logistic(la, lx0);
+                for (x0 = 0; x0 < 1; x0 += x0plus) {
+                        y = (unsigned int) setting.height * logistic(&a, x0, setting.iteration);
                         if (y == 0)
                                 continue;
-                        x = (unsigned int) width * (la - AI) / (AF - AI);
+                        x = (unsigned int) setting.width * (a - setting.ai) / (setting.af - setting.ai);
 
-                        tmp_pixel = img->widthStep * (height - y) + (x * 3);
-                        img->imageData[tmp_pixel + 0] = COLOR_R;
-                        img->imageData[tmp_pixel + 1] = COLOR_G;
-                        img->imageData[tmp_pixel + 2] = COLOR_B;
+                        tmp_pixel = img->widthStep * (setting.height - y) + (x * 3);
+                        img->imageData[tmp_pixel + 0] = setting.color_r;
+                        img->imageData[tmp_pixel + 1] = setting.color_g;
+                        img->imageData[tmp_pixel + 2] = setting.color_b;
                 }
 
                 i++;
 
                 /*print remaining time*/
-		tmp_remain = (width - i) * time_spent(&time_lap_start, &cv_time_freq);
-		printf("%f, Remaining time: %.1f[s]\n", la, tmp_remain);
+		tmp_remain = (setting.width - i) * time_spent(&time_lap_start, cv_time_freq);
+		printf("%f, Remaining time: %.1f[s]\n", a, tmp_remain);
 
         }
 
-        printf("Time:  %.1f[s]\n", time_spent(&time_start, &cv_time_freq));
+        printf("Time:  %.1f[s]\n", time_spent(&time_start, cv_time_freq));
         cvSaveImage(FILENAME, img, 0);
         cvReleaseImage(&img);
 
