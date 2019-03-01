@@ -17,17 +17,21 @@
 #include <opencv2/imgcodecs/imgcodecs_c.h>
 #include <stdio.h>
 
+
+/*default options*/
 #define AI 3.5  /*start value of a*/
 #define AF 4.0  /*end value of a*/
 #define SKIP 8  /*dots density = 1/SKIP*/
-
 #define WIDTH 26500  /*image size  width*/
 #define HEIGHT 20960  /*image size height*/
+#define ITERATION 10000 /*iteration counter of logistic function*/
+
+/*default defines*/
 #define COLOR_R 0  /*R*/
 #define COLOR_G 255  /*G*/
 #define COLOR_B 0  /*B*/
 #define FILENAME "output.png" /*output file name (.png,.jpg)*/
-#define ITERATION 10000 /*iteration count of logistic function*/
+
 
 
 struct calc_setting {
@@ -43,10 +47,12 @@ struct calc_setting {
 };
 
 
+
 double time_spent(long long unsigned int *cv_start_count, double cv_time_freq)
 {
         return (cvGetTickCount() - *cv_start_count) / (1000 * cv_time_freq);
 }
+
 
 
 double logistic(double *a, double x, unsigned int i)
@@ -56,6 +62,7 @@ double logistic(double *a, double x, unsigned int i)
         }
         return x;
 }
+
 
 
 int main (int argc, char **argv)
