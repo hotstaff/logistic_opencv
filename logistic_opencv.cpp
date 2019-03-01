@@ -78,7 +78,6 @@ int main (int argc, char **argv)
         double aplus; 
         double x0plus;
         long long unsigned int time_start;
-        long long unsigned int time_lap_start;
 	double tmp_remain;
 	long unsigned int tmp_pixel;
 
@@ -129,7 +128,6 @@ int main (int argc, char **argv)
         time_start = cvGetTickCount();
 
         for (a = setting.ai; a < setting.af; a += aplus) {
-                time_lap_start = cvGetTickCount();
 
                 for (x0 = 0; x0 < 1; x0 += x0plus) {
                         y = (unsigned int) setting.height * logistic(&a, x0, setting.iteration);
@@ -146,7 +144,7 @@ int main (int argc, char **argv)
                 i++;
 
                 /*print remaining time*/
-		tmp_remain = (setting.width - i) * time_spent(&time_lap_start, cv_time_freq);
+		tmp_remain = (setting.width - i) * (time_spent(&time_start, cv_time_freq) / i);
 		printf("%f, Remaining time: %.1f[s]\n", a, tmp_remain);
 
         }
