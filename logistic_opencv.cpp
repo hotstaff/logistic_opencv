@@ -17,9 +17,9 @@
 #include <opencv2/imgcodecs/imgcodecs_c.h>
 #include <stdio.h>
 
-#define SKIP 8  /*dots density = 1/SKIP*/
 #define AI 3.5  /*start value of a*/
 #define AF 4.0  /*end value of a*/
+#define SKIP 8  /*dots density = 1/SKIP*/
 
 #define WIDTH 26500  /*image size  width*/
 #define HEIGHT 20960  /*image size height*/
@@ -28,6 +28,7 @@
 #define COLOR_B 0  /*B*/
 #define FILENAME "output.png" /*output file name (.png,.jpg)*/
 #define ITERATION 10000 /*iteration count of logistic function*/
+
 
 struct calc_setting {
         unsigned int width = WIDTH;
@@ -63,16 +64,53 @@ int main (int argc, char **argv)
         struct calc_setting setting;
 
         const double cv_time_freq = cvGetTickFrequency() * 1000; /*timer frequency*/
-        const double aplus = (setting.af - setting.ai) * (1.0 / setting.width);  
-        const double x0plus = (1.0 / setting.height) * setting.skip;
         
         unsigned int i = 0;  /*iteration counter*/
         unsigned int x, y;  /*image coordinates*/
         double a, x0;  /*function coordinates*/
+        double aplus; 
+        double x0plus;
         long long unsigned int time_start;
         long long unsigned int time_lap_start;
 	double tmp_remain;
 	long unsigned int tmp_pixel;
+
+        if (argc > 1 && argc != 7) {
+                printf("usage: ./logistic_opencv AI(0 <= ai <= 4) AF(ai < af <= 4) SKIP WIDTH HEIGHT ITERATION\n\n");
+                return -1;
+        }
+
+        if (argc == 7) {
+                sscanf(argv[1], "%lf", &setting.ai);
+                sscanf(argv[2], "%lf", &setting.af);
+                sscanf(argv[3], "%u", &setting.skip);
+                sscanf(argv[4], "%u", &setting.width);
+                sscanf(argv[5], "%u", &setting.height);
+                sscanf(argv[6], "%u", &setting.iteration);
+        }
+        
+        if (
+                setting.ai < 0 || setting.ai > 4
+                || setting.ai >= setting.af || setting.af > 4
+                || setting.skip < 1 || setting.skip >= setting.width
+                || setting.width <= 0
+                || setting.height <= 0
+                || setting.iteration <= 0
+        ) {
+                printf("parameter error.\n\n");
+                return -1;
+        } 
+
+        aplus = (setting.af - setting.ai) * (1.0 / setting.width);
+        x0plus = (1.0 / setting.height) * setting.skip;
+
+        printf("a value region: %lf to %lf, skip: %u, size: %ux%u, iteration: %u\n",
+                                        setting.ai,
+                                        setting.af,
+                                        setting.skip,
+                                        setting.width,
+                                        setting.height,
+                                        setting.iteration);
 
         /*initialize an image*/
         img = cvCreateImage(cvSize(setting.width, setting.height), IPL_DEPTH_8U, 3);
