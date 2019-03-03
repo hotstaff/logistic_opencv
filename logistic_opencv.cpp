@@ -32,7 +32,8 @@
 #define COLOR_B 0  /*B*/
 #define FILENAME "output.png" /*output file name (.png,.jpg)*/
 
-
+#define remain_time(full_count, current_count, spent_time)              \
+        ((full_count - current_count) * (spent_time / current_count))   
 
 struct calc_setting {
         unsigned int width = WIDTH;
@@ -45,6 +46,22 @@ struct calc_setting {
         unsigned int skip = SKIP;
         unsigned int iteration = ITERATION;
 };
+
+
+
+int check_setting(const struct calc_setting *setting) {
+        if (
+                setting->ai < 0 || setting->ai > 4
+                || setting->ai >= setting->af || setting->af > 4
+                || setting->skip < 1 || setting->skip >= setting->width
+                || setting->width <= 0
+                || setting->height <= 0
+                || setting->iteration <= 0
+        ) {
+                return false;
+        } 
+        return true;
+}
 
 
 
@@ -70,7 +87,8 @@ int main (int argc, char **argv)
         IplImage *img = 0;
         struct calc_setting setting;
 
-        const double cv_time_freq = cvGetTickFrequency() * 1000; /*timer frequency*/
+        /*timer frequency*/
+        const double cv_time_freq = cvGetTickFrequency() * 1000;
         
         unsigned int i = 0;  /*iteration counter*/
         unsigned int x, y;  /*image coordinates*/
@@ -78,7 +96,6 @@ int main (int argc, char **argv)
         double aplus; 
         double x0plus;
         long long unsigned int time_start;
-	double tmp_remain;
 	long unsigned int tmp_pixel;
 
         if (argc > 1 && argc != 7) {
@@ -94,21 +111,11 @@ int main (int argc, char **argv)
                 sscanf(argv[5], "%u", &setting.height);
                 sscanf(argv[6], "%u", &setting.iteration);
         }
-        
-        if (
-                setting.ai < 0 || setting.ai > 4
-                || setting.ai >= setting.af || setting.af > 4
-                || setting.skip < 1 || setting.skip >= setting.width
-                || setting.width <= 0
-                || setting.height <= 0
-                || setting.iteration <= 0
-        ) {
+
+        if (!check_setting(&setting)) {
                 printf("parameter error.\n\n");
                 return -1;
-        } 
-
-        aplus = (setting.af - setting.ai) * (1.0 / setting.width);
-        x0plus = (1.0 / setting.height) * setting.skip;
+        };
 
         printf("a value region: %lf to %lf, skip: %u, size: %ux%u, iteration: %u\n",
                                         setting.ai,
@@ -119,12 +126,16 @@ int main (int argc, char **argv)
                                         setting.iteration);
 
         /*initialize an image*/
-        img = cvCreateImage(cvSize(setting.width, setting.height), IPL_DEPTH_8U, 3);
+        img = cvCreateImage(
+                cvSize(setting.width, setting.height),
+                                         IPL_DEPTH_8U,
+                                                    3);
         if (img == 0) 
                 return -1;
-
         cvZero(img);
 
+        aplus = (setting.af - setting.ai) * (1.0 / setting.width);
+        x0plus = (1.0 / setting.height) * setting.skip;
         time_start = cvGetTickCount();
 
         for (a = setting.ai; a < setting.af; a += aplus) {
@@ -136,16 +147,18 @@ int main (int argc, char **argv)
                         x = (unsigned int) setting.width * (a - setting.ai) / (setting.af - setting.ai);
 
                         tmp_pixel = img->widthStep * (setting.height - y) + (x * 3);
-                        img->imageData[tmp_pixel + 0] = setting.color_r;
+                        img->imageData[tmp_pixel] = setting.color_r;
                         img->imageData[tmp_pixel + 1] = setting.color_g;
                         img->imageData[tmp_pixel + 2] = setting.color_b;
                 }
 
                 i++;
-
                 /*print remaining time*/
-		tmp_remain = (setting.width - i) * (time_spent(&time_start, cv_time_freq) / i);
-		printf("%f, Remaining time: %.1f[s]\n", a, tmp_remain);
+		printf("%f, Remaining time: %.1f[s]\n", 
+                       a,
+                       remain_time(setting.width,
+                                   i,
+                                   time_spent(&time_start, cv_time_freq)));
 
         }
 
