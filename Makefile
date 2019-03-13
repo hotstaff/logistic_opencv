@@ -1,6 +1,4 @@
-CC            = gcc
 CXX           = g++
-CFLAGS        = -O2 -Wall -I/usr/local/include
 CXXFLAGS      = -Ofast -Wall -I/usr/local/include
 LDFLAGS       = -L/usr/local/lib
 LIBS          = -lm
@@ -11,9 +9,9 @@ LDFLAGS  += `pkg-config opencv --libs`
 CFLAGS   += `pkg-config opencv --cflags`
 CXXFLAGS += `pkg-config opencv --cflags`
 
-all:$(PROGRAM)
+all: $(PROGRAM)
 
-$(PROGRAM):$(OBJS)
+$(PROGRAM): $(OBJS)
 	$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) -o $(PROGRAM)
 	chmod 755 $(PROGRAM)
 
