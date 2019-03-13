@@ -19,18 +19,18 @@
 
 
 /*default options*/
-#define AI 3.5  /*start value of a*/
-#define AF 4.0  /*end value of a*/
-#define SKIP 8  /*dots density = 1/SKIP*/
-#define WIDTH 26500  /*image size  width*/
-#define HEIGHT 20960  /*image size height*/
-#define ITERATION 10000 /*iteration counter of logistic function*/
+#define AI 3.5			/*start value of a*/
+#define AF 4.0			/*end value of a*/
+#define SKIP 8			/*dots density = 1/SKIP*/
+#define WIDTH 26500		/*image size  width*/
+#define HEIGHT 20960		/*image size height*/
+#define ITERATION 10000		/*iteration counter of logistic function*/
 
 /*default defines*/
-#define COLOR_R 0  /*R*/
-#define COLOR_G 255  /*G*/
-#define COLOR_B 0  /*B*/
-#define FILENAME "output.png" /*output file name (.png,.jpg)*/
+#define COLOR_R 0		/*R*/
+#define COLOR_G 255		/*G*/
+#define COLOR_B 0		/*B*/
+#define FILENAME "output.png"	/*output file name (.png,.jpg)*/
 
 #define remain_time(full_count, current_count, spent_time)              \
         ((full_count - current_count) * (spent_time / current_count))   
@@ -48,7 +48,13 @@ struct calc_setting {
 };
 
 
-
+/**
+ * check_setting() - Check setting.
+ * 
+ * Returns:
+ *  true: sucess
+ *  false: fail
+ */
 int check_setting(const struct calc_setting *setting) {
         if (
                 setting->ai < 0 || setting->ai > 4
@@ -64,8 +70,10 @@ int check_setting(const struct calc_setting *setting) {
 }
 
 
-
-double time_spent(long long unsigned int *cv_start_count, double cv_time_freq)
+/**
+ * time_elapsed() - Return time elapsed.
+ */
+double time_elapsed(unsigned long long int *cv_start_count, double cv_time_freq)
 {
         return (cvGetTickCount() - *cv_start_count) / (1000 * cv_time_freq);
 }
@@ -90,13 +98,13 @@ int main (int argc, char **argv)
         /*timer frequency*/
         const double cv_time_freq = cvGetTickFrequency() * 1000;
         
-        unsigned int i = 0;  /*iteration counter*/
-        unsigned int x, y;  /*image coordinates*/
-        double a, x0;  /*function coordinates*/
+        unsigned int i = 0; 	/*iteration counter*/
+        unsigned int x, y;	/*image coordinates*/
+        double a, x0;		/*function coordinates*/
         double aplus; 
         double x0plus;
-        long long unsigned int time_start;
-	long unsigned int tmp_pixel;
+        unsigned long long int time_start;
+	unsigned long int tmp_pixel;
 
         if (argc > 1 && argc != 7) {
                 printf("usage: ./logistic_opencv AI(0 <= ai <= 4) AF(ai < af <= 4) SKIP WIDTH HEIGHT ITERATION\n\n");
@@ -158,11 +166,11 @@ int main (int argc, char **argv)
                        a,
                        remain_time(setting.width,
                                    i,
-                                   time_spent(&time_start, cv_time_freq)));
+                                   time_elapsed(&time_start, cv_time_freq)));
 
         }
 
-        printf("Time:  %.1f[s]\n", time_spent(&time_start, cv_time_freq));
+        printf("Time:  %.1f[s]\n", time_elapsed(&time_start, cv_time_freq));
         cvSaveImage(FILENAME, img, 0);
         cvReleaseImage(&img);
 
