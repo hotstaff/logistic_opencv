@@ -107,7 +107,8 @@ int main (int argc, char **argv)
 	unsigned long int tmp_pixel;
 
         if (argc > 1 && argc != 7) {
-                printf("usage: ./logistic_opencv AI(0 <= ai <= 4) AF(ai < af <= 4) SKIP WIDTH HEIGHT ITERATION\n\n");
+                printf("usage: ./logistic_opencv "\
+"AI(0 <= ai <= 4) AF(ai < af <= 4) SKIP WIDTH HEIGHT ITERATION\n\n");
                 return -1;
         }
 
@@ -125,7 +126,8 @@ int main (int argc, char **argv)
                 return -1;
         };
 
-        printf("a value region: %lf to %lf, skip: %u, size: %ux%u, iteration: %u\n",
+        printf("a value region: "
+"%lf to %lf, skip: %u, size: %ux%u, iteration: %u\n",
                                         setting.ai,
                                         setting.af,
                                         setting.skip,
@@ -149,12 +151,15 @@ int main (int argc, char **argv)
         for (a = setting.ai; a < setting.af; a += aplus) {
 
                 for (x0 = 0; x0 < 1; x0 += x0plus) {
-                        y = (unsigned int) setting.height * logistic(&a, x0, setting.iteration);
+                        y = (unsigned int) (setting.height 
+                            * logistic(&a, x0, setting.iteration));
                         if (y == 0)
                                 continue;
-                        x = (unsigned int) setting.width * (a - setting.ai) / (setting.af - setting.ai);
+                        x = (unsigned int) (setting.width
+                            * (a - setting.ai) / (setting.af - setting.ai));
 
-                        tmp_pixel = img->widthStep * (setting.height - y) + (x * 3);
+                        tmp_pixel = (img->widthStep
+                            * (setting.height - y) + (x * 3));
                         img->imageData[tmp_pixel] = setting.color_r;
                         img->imageData[tmp_pixel + 1] = setting.color_g;
                         img->imageData[tmp_pixel + 2] = setting.color_b;
